@@ -39,7 +39,7 @@ def request_admin():
         if user_input == 'y': 
             ctypes.windll.shell32.ShellExecuteW(None, "runas", sys.executable, __file__, None, 1)
         elif user_input == 'n': 
-            return 
+            pass
         else: 
             print("无效的输入，请输入 Y 或 N。点击任意键退出。。。")
             input()# 等待输入
