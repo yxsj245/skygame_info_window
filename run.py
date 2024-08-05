@@ -150,7 +150,6 @@ def main():
     if not is_admin():
         # 请求管理员权限 
         request_admin()
-        return 
     
     print("游戏只有每次启动进入主菜单才会清空日志内容，请确保游戏已启动并登陆成功再启动监听")
     
