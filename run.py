@@ -6,11 +6,16 @@ import re
 from datetime import datetime
 import tkinter as tk
 
-# 检查是否以管理员身份运行 
-if not ctypes.windll.shell32.IsUserAnAdmin():
-    print("请以管理员模式运行以保证在C盘的访问权限")
-    input("按任意键退出...")
-    sys.exit(1)
+# 检查管理员权限
+def is_admin():
+    try:
+        return ctypes.windll.shell32.IsUserAnAdmin()
+    except:
+        return False 
+ 
+# 请求管理员权限 
+def request_admin():
+        ctypes.windll.shell32.ShellExecuteW(None, "runas", sys.executable, __file__, None, 1)
 
 # 定义配置文件的路径
 CONFIG_FILE = 'config.ini'
@@ -53,14 +58,10 @@ class LogFileHandler:
     def update_status_connecting(self, ip_port):
         self.status_label.config(text=f"房间状态：正在连接服务器: [{ip_port}]")
 
-    def update_error(self):
+    def update_error(self):# 【Debug用，后续版本会删除】
         global errorTimes  # 使用全局变量
         errorTimes += 1  # 错误次数自增
-        self.error_times_label.config(text=f"错误次数：{errorTimes}")  # 更新错误次数标签
-        
-        #旧代码
-        #self.player_info_label.config(text="错误：由于日志输出error,此时日志会暂停")
-        #self.status_label.config(text="所有信息输出，需要您重启游戏和脚本")
+        self.error_times_label.config(text=f"【Debug】错误次数：{errorTimes}")  # 更新错误次数标签
 
     def apply_replacements(self, line):
         for pattern, replacer in self.replacement_patterns.items():
@@ -83,6 +84,13 @@ class LogFileHandler:
             self.apply_replacements(last_line)
 
 def main():
+    
+    # 检查是否具有管理员权限 
+    if not is_admin():
+        # 请求管理员权限 
+        request_admin()
+        return 
+    
     print("游戏只有每次启动进入主菜单才会清空日志内容，请确保游戏已启动并登陆成功再启动监听")
     
     # 检查配置文件是否存在
@@ -103,13 +111,13 @@ def main():
     root.attributes("-topmost", True)  # 设置窗口始终在最前面
 
     # 创建三个标签，一个用于显示玩家信息，另一个用于显示房间状态，第三个用于显示错误次数
-    player_info_label = tk.Label(root, text="当前总人数：未知，房间人数：未知", font=("Helvetica", 12))
+    player_info_label = tk.Label(root, text="当前总人数：未知，房间人数：未知", font=("微软雅黑", 12))
     player_info_label.pack(fill=tk.BOTH, expand=True)
 
-    status_label = tk.Label(root, text="状态：未知", font=("Helvetica", 12))
+    status_label = tk.Label(root, text="状态：未知", font=("微软雅黑", 12))
     status_label.pack(fill=tk.BOTH, expand=True)
 
-    error_times_label = tk.Label(root, text="错误次数：0", font=("Helvetica", 12), fg="red")  # 新增 错误次数的标签
+    error_times_label = tk.Label(root, text="错误次数：0", font=("微软雅黑", 12), fg="red")  # 新增 错误次数的标签
     error_times_label.pack(fill=tk.BOTH, expand=True)
 
     log_handler = LogFileHandler(log_file_path, player_info_label, status_label, error_times_label)
